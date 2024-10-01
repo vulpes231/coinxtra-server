@@ -21,11 +21,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-// user endpoints wihtout auth
-app.use("/signin", require("./routes/user/signin"));
-app.use("/signup", require("./routes/user/signup"));
-app.use("/", require("./routes/root"));
-
 // user endpoints with auth
 app.use(verifyJWT);
 
