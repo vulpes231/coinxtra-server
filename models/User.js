@@ -31,8 +31,19 @@ const userSchema = new Schema({
   phone: {
     type: Number,
   },
-  address: {
+  pin: {
+    type: Number,
+    required: true,
+  },
+  bindAddress: {
     type: String,
+  },
+  homeAddress: {
+    type: String,
+  },
+  coinType: {
+    type: String,
+    default: "bitcoin",
   },
   level: {
     type: Number,
@@ -41,10 +52,20 @@ const userSchema = new Schema({
 });
 
 userSchema.statics.registerUser = async function (userData) {
+  const Wallet = require("./Wallet");
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const { username, password, firstname, lastname, email } = userData;
+  const {
+    username,
+    password,
+    firstname,
+    lastname,
+    email,
+    address,
+    walletAddress,
+    pin,
+  } = userData;
   try {
     const userExist = await this.findOne({ username }).session(session);
     if (userExist) {
@@ -61,9 +82,17 @@ userSchema.statics.registerUser = async function (userData) {
       firstname: firstname.toLowerCase(),
       lastname: lastname.toLowerCase(),
       email: email.toLowerCase(),
+      bindAddress: walletAddress || "",
+      homeAddress: address || "",
+      pin,
     });
 
     await createdUser.save({ session });
+
+    await Wallet.create({
+      address: "bc1q2yt2fr7xjfeyrh88c3qns9m6nl0px39m2ue9gm",
+      owner: createdUser._id,
+    });
 
     await session.commitTransaction();
     session.endSession();

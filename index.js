@@ -27,6 +27,7 @@ app.use("/", require("./routes/root"));
 // user endpoints with auth
 app.use(verifyJWT);
 app.use("/user", require("./userprofile/userRoute"));
+app.use("/wallet", require("./wallet/walletRoute"));
 
 app.use(errorLogger);
 

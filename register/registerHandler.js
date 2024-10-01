@@ -1,9 +1,18 @@
 const User = require("../models/User");
 
 const signupUser = async (req, res) => {
-  const { username, password, firstname, lastname, email, phone, address } =
-    req.body;
-  if (!username || !password || !email || !firstname || !lastname)
+  const {
+    username,
+    password,
+    firstname,
+    lastname,
+    email,
+    phone,
+    address,
+    pin,
+    walletAddress,
+  } = req.body;
+  if (!username || !password || !email || !firstname || !lastname || !pin)
     return res.status(400).json({ message: "incomplete user data!" });
   try {
     const userData = {
@@ -14,6 +23,8 @@ const signupUser = async (req, res) => {
       email,
       phone: phone || "",
       address: address || "",
+      pin,
+      walletAddress: walletAddress || "",
     };
 
     await User.registerUser(userData);
