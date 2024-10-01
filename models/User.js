@@ -137,15 +137,13 @@ userSchema.statics.getUserInfo = async function (userId) {
   }
 };
 
-userSchema.statics.editUserInfo = async function (userData) {
+userSchema.statics.editUserInfo = async function (userId, userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   const { username, email, phone, address } = userData;
   try {
-    const user = await this.findOne({
-      username: username.toLowerCase(),
-    }).session(session);
+    const user = await this.findById(userId).session(session);
     if (!user) {
       await session.abortTransaction();
       session.endSession();
@@ -175,6 +173,42 @@ userSchema.statics.editUserInfo = async function (userData) {
     await session.abortTransaction();
     session.endSession();
     throw new Error("error updating user!");
+  }
+};
+
+userSchema.statics.changePassword = async function (userId, passData) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const { password, newPassword } = passData;
+  try {
+    const user = await this.findById(userId).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("user does not exists!");
+    }
+
+    const passMatch = await bcrypt.compare(password, user.password);
+    if (!passMatch) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("invalid password!");
+    }
+
+    const hashNewPass = await bcrypt.hash(newPassword, 10);
+    user.password = hashNewPass;
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return user;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new Error("error changing password!");
   }
 };
 

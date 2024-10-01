@@ -7,11 +7,10 @@ const { corsOptions } = require("./configs/corsOptions");
 require("dotenv").config();
 const cors = require("cors");
 const { verifyJWT } = require("./middlewares/verifyJWT");
-const { allowedOrigins } = require("./configs/allowedOrigins");
 
 const app = express();
 
-// connectDB();
+connectDB();
 const PORT = process.env.PORT || 3000;
 
 app.use(reqLogger);
@@ -21,17 +20,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/signup", require("./register/registerRoute"));
+app.use("/signin", require("./auth/loginRoute"));
+app.use("/", require("./routes/root"));
+
 // user endpoints with auth
 app.use(verifyJWT);
+app.use("/user", require("./userprofile/userRoute"));
 
 app.use(errorLogger);
 
-// mongoose.connection.once("connected", () => {
-//   server.listen(PORT, () =>
-//     console.log(`Server started on http://localhost:${PORT}`)
-//   );
-// });
-
-app.listen(PORT, () =>
-  console.log(`Server started on http://localhost:${PORT}`)
-);
+mongoose.connection.once("connected", () => {
+  app.listen(PORT, () =>
+    console.log(`Server started on http://localhost:${PORT}`)
+  );
+});
