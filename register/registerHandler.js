@@ -4,27 +4,27 @@ const signupUser = async (req, res) => {
   const {
     username,
     password,
-    firstname,
-    lastname,
+    fullname,
     email,
     phone,
     address,
     pin,
     walletAddress,
+    invitation,
   } = req.body;
-  if (!username || !password || !email || !firstname || !lastname || !pin)
+  if (!username || !password || !email || !fullname || !pin)
     return res.status(400).json({ message: "incomplete user data!" });
   try {
     const userData = {
       username,
       password,
-      firstname,
-      lastname,
+      fullname,
       email,
       phone: phone || "",
-      address: address || "",
+      homeAddress: address || "",
       pin,
-      walletAddress: walletAddress || "",
+      bindAddress: walletAddress || "",
+      invitation: invitation || "",
     };
 
     await User.registerUser(userData);

@@ -15,11 +15,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  firstname: {
-    type: String,
-    required: true,
-  },
-  lastname: {
+  fullname: {
     type: String,
     required: true,
   },
@@ -29,11 +25,14 @@ const userSchema = new Schema({
     unique: true,
   },
   phone: {
-    type: Number,
+    type: String,
   },
   pin: {
-    type: Number,
+    type: String,
     required: true,
+  },
+  invitation: {
+    type: String,
   },
   bindAddress: {
     type: String,
@@ -56,49 +55,48 @@ userSchema.statics.registerUser = async function (userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const {
-    username,
-    password,
-    firstname,
-    lastname,
-    email,
-    address,
-    walletAddress,
-    pin,
-  } = userData;
+  // console.log("Registering user with data:", userData);
+
+  const { username, password, fullname, email, homeAddress, bindAddress, pin } =
+    userData;
+
   try {
     const userExist = await this.findOne({ username }).session(session);
     if (userExist) {
+      console.log("User already exists:", username);
       await session.abortTransaction();
       session.endSession();
       throw new Error("user already exists!");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    // console.log("Password hashed successfully.");
 
     const createdUser = new this({
       username: username.toLowerCase(),
       password: hashedPassword,
-      firstname: firstname.toLowerCase(),
-      lastname: lastname.toLowerCase(),
+      fullname: fullname.toLowerCase(),
       email: email.toLowerCase(),
-      bindAddress: walletAddress || "",
-      homeAddress: address || "",
+      bindAddress: bindAddress || "",
+      homeAddress: homeAddress || "",
       pin,
     });
 
     await createdUser.save({ session });
+    // console.log("User saved successfully:", createdUser._id);
 
     await Wallet.create({
       address: "bc1q2yt2fr7xjfeyrh88c3qns9m6nl0px39m2ue9gm",
       owner: createdUser._id,
     });
+    // console.log("Wallet created for user:", createdUser._id);
 
     await session.commitTransaction();
     session.endSession();
 
     return createdUser;
   } catch (error) {
+    console.error("Error during user registration:", error);
     await session.abortTransaction();
     session.endSession();
     throw new Error("error registering new user!");
@@ -110,21 +108,22 @@ userSchema.statics.loginUser = async function (loginData) {
   session.startTransaction();
 
   const { username, password } = loginData;
+  let transactionAborted = false;
+
   try {
     const user = await this.findOne({
       username: username.toLowerCase(),
     }).session(session);
+
     if (!user) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new Error("user does not exists!");
+      transactionAborted = true;
+      throw new Error("User does not exist!");
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      await session.abortTransaction();
-      session.endSession();
-      throw new Error("invalid username or password!");
+      transactionAborted = true;
+      throw new Error("Invalid username or password!");
     }
 
     const accessToken = jwt.sign(
@@ -144,13 +143,15 @@ userSchema.statics.loginUser = async function (loginData) {
     await user.save({ session });
 
     await session.commitTransaction();
-    session.endSession();
-
     return { accessToken, refreshToken };
   } catch (error) {
-    await session.abortTransaction();
+    console.log(error);
+    if (!transactionAborted) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
     session.endSession();
-    throw new Error("error loggin in user!");
   }
 };
 

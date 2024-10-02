@@ -16,9 +16,7 @@ const signinUser = async (req, res) => {
     res.status(200).json({ message: "user logged in", accessToken });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ message: "an error occured during login. try again" });
+    res.status(500).json({ message: error.message });
   }
 };
 
