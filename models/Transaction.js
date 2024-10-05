@@ -171,7 +171,7 @@ trnxSchema.statics.withdraw = async function (userId, trnxData) {
   }
 };
 
-trnxSchema.statics.getUserTrnxs = async (userId) => {
+trnxSchema.statics.getUserTrnxs = async function (userId) {
   try {
     const userTrnxs = await this.find({ createdBy: userId });
     return userTrnxs;

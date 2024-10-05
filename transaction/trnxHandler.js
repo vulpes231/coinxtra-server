@@ -43,6 +43,7 @@ const getUserTransactions = async (req, res) => {
   const userId = req.userId;
   try {
     const trnxs = await Transaction.getUserTrnxs(userId);
+    res.status(200).json({ trnxs });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
