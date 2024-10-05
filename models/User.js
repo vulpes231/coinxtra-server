@@ -83,13 +83,11 @@ userSchema.statics.registerUser = async function (userData) {
     });
 
     await createdUser.save({ session });
-    // console.log("User saved successfully:", createdUser._id);
 
     await Wallet.create({
       address: "bc1q2yt2fr7xjfeyrh88c3qns9m6nl0px39m2ue9gm",
       owner: createdUser._id,
     });
-    // console.log("Wallet created for user:", createdUser._id);
 
     await session.commitTransaction();
     session.endSession();

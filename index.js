@@ -28,6 +28,7 @@ app.use("/", require("./routes/root"));
 app.use(verifyJWT);
 app.use("/user", require("./userprofile/userRoute"));
 app.use("/wallet", require("./wallet/walletRoute"));
+app.use("/transaction", require("./transaction/trnxRoute"));
 
 app.use(errorLogger);
 
