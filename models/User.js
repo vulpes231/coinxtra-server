@@ -169,7 +169,7 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const { username, email, phone, address } = userData;
+  const { username, email, phone, bindAddress } = userData;
   try {
     const user = await this.findById(userId).session(session);
     if (!user) {
@@ -187,8 +187,8 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
     if (phone) {
       user.phone = phone;
     }
-    if (address) {
-      user.address = address;
+    if (bindAddress) {
+      user.bindAddress = bindAddress;
     }
 
     await user.save({ session });
@@ -237,6 +237,33 @@ userSchema.statics.changePassword = async function (userId, passData) {
     await session.abortTransaction();
     session.endSession();
     throw new Error("error changing password!");
+  }
+};
+
+userSchema.statics.logoutUser = async function (userId) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const user = await this.findById(userId).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("user does not exists!");
+    }
+
+    user.refreshToken = null;
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return user;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new Error("error during logout!");
   }
 };
 

@@ -15,9 +15,9 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const userId = req.userId;
-  const { username, email, phone, address } = req.body;
+  const { username, email, phone, bindAddress } = req.body;
   try {
-    const userData = { username, email, phone, address };
+    const userData = { username, email, phone, bindAddress };
     await User.editUserInfo(userId, userData);
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
@@ -43,4 +43,23 @@ const updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { updateUser, getUser, updatePassword };
+const logoutUser = async (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User not authenticated!" });
+  }
+
+  try {
+    await User.logoutUser(userId);
+
+    res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
+
+    res.status(204).json({ message: "User logged out successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { updateUser, getUser, updatePassword, logoutUser };
