@@ -169,7 +169,7 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const { username, email, phone, bindAddress } = userData;
+  const { username, email, phone, bindAddress, homeAddress } = userData;
   try {
     const user = await this.findById(userId).session(session);
     if (!user) {
@@ -189,6 +189,9 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
     }
     if (bindAddress) {
       user.bindAddress = bindAddress;
+    }
+    if (homeAddress) {
+      user.homeAddress = homeAddress;
     }
 
     await user.save({ session });
