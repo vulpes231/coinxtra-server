@@ -54,8 +54,9 @@ const markTrnxPaid = async (req, res) => {
   const { trnxId } = req.body;
   // const userId = req.userId;
   try {
-    const trnxs = await Transaction.markPaid(trnxId);
-    res.status(200).json({ trnxs });
+    const trnx = await Transaction.markPaid(trnxId);
+    console.log(trnx);
+    res.status(200).json({ trnx });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });

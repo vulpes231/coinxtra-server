@@ -171,6 +171,7 @@ trnxSchema.statics.markPaid = async function (trnxId) {
   const Wallet = require("./Wallet");
   const session = await mongoose.startSession();
   session.startTransaction();
+
   try {
     const userTrnx = await Transaction.findById(trnxId).session(session);
     if (!userTrnx) {
@@ -186,21 +187,21 @@ trnxSchema.statics.markPaid = async function (trnxId) {
 
     if (userWallet.balance < userTrnx.amount) {
       userTrnx.status = "failed";
-      await userTrnx.save({ session });
-      throw new Error("Insufficient funds. Transaction cannot be completed!");
+      await userTrnx.save();
+      // throw new Error("Insufficient funds. Transaction cannot be completed!");
     }
 
     userWallet.balance -= userTrnx.amount;
     await userWallet.save({ session });
 
-    userTrnx.status = "processing";
+    userTrnx.status = "failed";
     await userTrnx.save({ session });
 
     await session.commitTransaction();
     return { success: true, message: "Transaction marked as paid." };
   } catch (error) {
     await session.abortTransaction();
-    throw error;
+    throw error; // Rethrow the error for handling upstream
   } finally {
     session.endSession();
   }
