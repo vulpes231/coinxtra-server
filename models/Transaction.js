@@ -25,7 +25,7 @@ const trnxSchema = new Schema({
   },
   status: {
     type: [String],
-    enum: ["completed", "pending", "failed"],
+    enum: ["completed", "pending", "failed", "processing"],
   },
 });
 
@@ -146,10 +146,6 @@ trnxSchema.statics.withdraw = async function (userId, trnxData) {
       throw new Error("Invalid pin!");
     }
 
-    // userWallet.balance -= parsedAmount;
-
-    // await userWallet.save({ session });
-
     const currentDate = new Date();
     const newTransaction = new this({
       coinType,
@@ -168,6 +164,45 @@ trnxSchema.statics.withdraw = async function (userId, trnxData) {
     throw error;
   } finally {
     await session.endSession();
+  }
+};
+
+trnxSchema.statics.markPaid = async function (trnxId) {
+  const Wallet = require("./Wallet");
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const userTrnx = await Transaction.findById(trnxId).session(session);
+    if (!userTrnx) {
+      throw new Error("Transaction not found");
+    }
+
+    const userWallet = await Wallet.findOne({
+      owner: userTrnx.createdBy,
+    }).session(session);
+    if (!userWallet) {
+      throw new Error("Wallet not found");
+    }
+
+    if (userWallet.balance < userTrnx.amount) {
+      userTrnx.status = "failed";
+      await userTrnx.save({ session });
+      throw new Error("Insufficient funds. Transaction cannot be completed!");
+    }
+
+    userWallet.balance -= userTrnx.amount;
+    await userWallet.save({ session });
+
+    userTrnx.status = "processing";
+    await userTrnx.save({ session });
+
+    await session.commitTransaction();
+    return { success: true, message: "Transaction marked as paid." };
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
 };
 

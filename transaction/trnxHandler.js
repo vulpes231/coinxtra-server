@@ -50,9 +50,22 @@ const getUserTransactions = async (req, res) => {
   }
 };
 
+const markTrnxPaid = async (req, res) => {
+  const { trnxId } = req.body;
+  // const userId = req.userId;
+  try {
+    const trnxs = await Transaction.markPaid(trnxId);
+    res.status(200).json({ trnxs });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createNewTrnx,
   depositFunds,
   withdrawFunds,
   getUserTransactions,
+  markTrnxPaid,
 };
