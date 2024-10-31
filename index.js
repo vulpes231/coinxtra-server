@@ -29,6 +29,7 @@ app.use(verifyJWT);
 app.use("/user", require("./userprofile/userRoute"));
 app.use("/wallet", require("./wallet/walletRoute"));
 app.use("/transaction", require("./transaction/trnxRoute"));
+app.use("/alert", require("./notification/alertRoute"));
 
 app.use(errorLogger);
 
