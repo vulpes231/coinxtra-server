@@ -33,6 +33,7 @@ const getUserAlerts = async (req, res) => {
 
 const getAlert = async (req, res) => {
   const { id } = req.params;
+  console.log(id);
   try {
     const alert = await Notification.findOne({ _id: id });
     if (!alert) return res.status(400).json({ message: "bad request!" });
