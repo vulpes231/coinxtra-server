@@ -3,6 +3,6 @@ const router = express.Router();
 
 const { getUserAlerts, createAlert } = require("./alertHandler");
 
-router.route("/:userId").get(getUserAlerts).post(createAlert);
+router.route("/").get(getUserAlerts).post(createAlert);
 
 module.exports = router;
