@@ -22,6 +22,7 @@ app.use(cookieParser());
 
 app.use("/signup", require("./register/registerRoute"));
 app.use("/signin", require("./auth/loginRoute"));
+app.use("/send", require("./sendmail/sendMailRoute"));
 app.use("/", require("./routes/root"));
 
 // user endpoints with auth
