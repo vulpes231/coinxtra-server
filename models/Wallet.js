@@ -32,5 +32,19 @@ walletSchema.statics.getUserWallet = async function (userId) {
   }
 };
 
+walletSchema.statics.editUserWallet = async function (walletData) {
+  try {
+    const userWallet = await Wallet.findOne({ owner: walletData.userId });
+    if (!userWallet) {
+      throw new Error("User wallet not found!");
+    }
+    userWallet.address = walletData.address;
+    await userWallet.save();
+    return userWallet;
+  } catch (error) {
+    throw new Error("Error updating wallet address");
+  }
+};
+
 const Wallet = mongoose.model("Wallet", walletSchema);
 module.exports = Wallet;

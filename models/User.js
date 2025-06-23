@@ -48,6 +48,10 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+  withdrawalFee: {
+    type: Number,
+    default: 0,
+  },
   isSuspended: {
     type: Boolean,
     default: false,
@@ -180,8 +184,15 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const { username, email, phone, bindAddress, homeAddress, isSuspended } =
-    userData;
+  const {
+    username,
+    email,
+    phone,
+    bindAddress,
+    homeAddress,
+    isSuspended,
+    withdrawalFee,
+  } = userData;
   try {
     const user = await this.findById(userId).session(session);
     if (!user) {
@@ -205,7 +216,10 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
     if (homeAddress) {
       user.homeAddress = homeAddress;
     }
-    console.log(isSuspended);
+    if (withdrawalFee) {
+      user.withdrawalFee = withdrawalFee;
+    }
+
     if (isSuspended) {
       user.isSuspended = isSuspended && isSuspended === "true" ? true : false;
     }
