@@ -48,6 +48,10 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+  isSuspended: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.statics.registerUser = async function (userData) {
@@ -113,9 +117,16 @@ userSchema.statics.loginUser = async function (loginData) {
       username: username.toLowerCase(),
     }).session(session);
 
+    console.log(user.isSuspended);
+
     if (!user) {
       transactionAborted = true;
       throw new Error("User does not exist!");
+    }
+
+    if (user.isSuspended) {
+      transactionAborted = true;
+      throw new Error("User account is suspended!");
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -169,7 +180,8 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  const { username, email, phone, bindAddress, homeAddress } = userData;
+  const { username, email, phone, bindAddress, homeAddress, isSuspended } =
+    userData;
   try {
     const user = await this.findById(userId).session(session);
     if (!user) {
@@ -192,6 +204,10 @@ userSchema.statics.editUserInfo = async function (userId, userData) {
     }
     if (homeAddress) {
       user.homeAddress = homeAddress;
+    }
+    console.log(isSuspended);
+    if (isSuspended) {
+      user.isSuspended = isSuspended && isSuspended === "true" ? true : false;
     }
 
     await user.save({ session });

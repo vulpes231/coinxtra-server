@@ -15,9 +15,17 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const userId = req.userId;
-  const { username, email, phone, bindAddress, homeAddress } = req.body;
+  const { username, email, phone, bindAddress, homeAddress, isSuspended } =
+    req.body;
   try {
-    const userData = { username, email, phone, bindAddress, homeAddress };
+    const userData = {
+      username,
+      email,
+      phone,
+      bindAddress,
+      homeAddress,
+      isSuspended,
+    };
     await User.editUserInfo(userId, userData);
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
