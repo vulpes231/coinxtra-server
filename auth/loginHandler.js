@@ -7,13 +7,17 @@ const signinUser = async (req, res) => {
   try {
     const loginData = { username, password };
     const tokens = await User.loginUser(loginData);
-    const { accessToken, refreshToken } = tokens;
+    const { accessToken, refreshToken, isSuspended } = tokens;
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
     });
 
-    res.status(200).json({ message: "user logged in", accessToken });
+    res.status(200).json({
+      message: "user logged in",
+      accessToken,
+      isSuspended: isSuspended,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });

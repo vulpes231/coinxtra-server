@@ -117,7 +117,7 @@ userSchema.statics.loginUser = async function (loginData) {
   let transactionAborted = false;
 
   try {
-    const user = await this.findOne({
+    const user = await User.findOne({
       username: username.toLowerCase(),
     }).session(session);
 
@@ -155,8 +155,10 @@ userSchema.statics.loginUser = async function (loginData) {
 
     await user.save({ session });
 
+    const isSuspended = user.isSuspended;
+
     await session.commitTransaction();
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, isSuspended };
   } catch (error) {
     console.log(error);
     if (!transactionAborted) {
